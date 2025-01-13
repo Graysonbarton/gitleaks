@@ -1,26 +1,26 @@
 package rules
 
 import (
+	regexp "github.com/wasilibs/go-re2"
+
 	"github.com/zricethezav/gitleaks/v8/cmd/generate/config/utils"
-	"regexp"
+	"github.com/zricethezav/gitleaks/v8/config"
 
 	"github.com/zricethezav/gitleaks/v8/cmd/generate/secrets"
-	"github.com/zricethezav/gitleaks/v8/config"
 )
 
 func Doppler() *config.Rule {
 	// define rule
 	r := config.Rule{
-		Description: "Discovered a Doppler API token, posing a risk to environment and secrets management security.",
 		RuleID:      "doppler-api-token",
+		Description: "Discovered a Doppler API token, posing a risk to environment and secrets management security.",
 		Regex:       regexp.MustCompile(`dp\.pt\.(?i)[a-z0-9]{43}`),
-		Keywords:    []string{"doppler"},
+		Entropy:     2,
+		Keywords:    []string{`dp.pt.`},
 	}
 
 	// validate
-	tps := []string{
-		utils.GenerateSampleSecret("doppler", "dp.pt."+secrets.NewSecret(utils.AlphaNumeric("43"))),
-	}
+	tps := utils.GenerateSampleSecrets("doppler", "dp.pt."+secrets.NewSecret(utils.AlphaNumeric("43")))
 	return utils.Validate(r, tps, nil)
 }
 

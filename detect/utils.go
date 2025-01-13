@@ -9,10 +9,10 @@ import (
 
 	"github.com/charmbracelet/lipgloss"
 
+	"github.com/zricethezav/gitleaks/v8/logging"
 	"github.com/zricethezav/gitleaks/v8/report"
 
 	"github.com/gitleaks/go-gitdiff/gitdiff"
-	"github.com/rs/zerolog/log"
 )
 
 // augmentGitFinding updates the start and end line numbers of a finding to include the
@@ -74,7 +74,7 @@ func filter(findings []report.Finding, redact uint) []report.Finding {
 
 					genericMatch := strings.Replace(f.Match, f.Secret, "REDACTED", -1)
 					betterMatch := strings.Replace(fPrime.Match, fPrime.Secret, "REDACTED", -1)
-					log.Trace().Msgf("skipping %s finding (%s), %s rule takes precedence (%s)", f.RuleID, genericMatch, fPrime.RuleID, betterMatch)
+					logging.Trace().Msgf("skipping %s finding (%s), %s rule takes precedence (%s)", f.RuleID, genericMatch, fPrime.RuleID, betterMatch)
 					include = false
 					break
 				}
@@ -162,6 +162,9 @@ func printFinding(f report.Finding, noColor bool) {
 		fmt.Println("")
 		return
 	}
+	if len(f.Tags) > 0 {
+		fmt.Printf("%-12s %s\n", "Tags:", f.Tags)
+	}
 	fmt.Printf("%-12s %s\n", "File:", f.File)
 	fmt.Printf("%-12s %d\n", "Line:", f.StartLine)
 	if f.Commit == "" {
@@ -186,4 +189,8 @@ func containsDigit(s string) bool {
 
 	}
 	return false
+}
+
+func isWhitespace(ch byte) bool {
+	return ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r'
 }
